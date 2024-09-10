@@ -1,4 +1,4 @@
-import requests
+from requester import ApiRequester
 
 
 class HubSpot:
@@ -20,7 +20,8 @@ class HubSpot:
         self.__validate_params(api_key, retry)
         self.__api_key = api_key
         self.__retry = retry
-
+        self.__requester = ApiRequester(self.__api_key, self.retry).create_session()
+        
     def __validate_params(self, api_key: str, retry: int) -> None:
         """Validates the input parameters."""
         if not isinstance(api_key, str):
