@@ -1,5 +1,5 @@
 from requester import ApiRequester
-
+from files.filecms import FileCMS
 
 class HubSpot:
     """
@@ -43,3 +43,8 @@ class HubSpot:
     def create(cls, api_key: str, retry: int = 3) -> 'HubSpot':
         """Creates a new instance of HubSpot."""
         return cls(api_key, retry)
+    
+    @property
+    def file_cms(self) -> 'FileCMS':
+        """Creates a new instance of FileCMS."""
+        return FileCMS(self, self.__requester)
