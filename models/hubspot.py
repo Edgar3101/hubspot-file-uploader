@@ -1,4 +1,4 @@
-from requester import ApiRequester
+from api_requester import ApiRequester
 from files.filecms import FileCMS
 
 class HubSpot:
@@ -20,7 +20,7 @@ class HubSpot:
         self.__validate_params(api_key, retry)
         self.__api_key = api_key
         self.__retry = retry
-        self.__requester = ApiRequester(self.__api_key, self.retry).create_session()
+        self.__requester = ApiRequester(self.__api_key, self.retry)
         
     def __validate_params(self, api_key: str, retry: int) -> None:
         """Validates the input parameters."""
