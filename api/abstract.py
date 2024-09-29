@@ -1,4 +1,4 @@
-from models.hubspot import HubSpot
+from .abstract_hubspot_client import AbstractHubspot
 from requests import Session
 
 class AbstractFileCMS:
@@ -10,7 +10,7 @@ class AbstractFileCMS:
         __hubspot_instance: Instance of the HubSpot class.
         __requester: Instance of the ApiRequester class.
     """
-    def __init__(self, hubspot_instance: HubSpot, requester: Session):
+    def __init__(self, hubspot_instance: AbstractHubspot, requester: Session):
         """
         self.__hubspot_instance = hubspot_instance
         """
@@ -25,7 +25,7 @@ class AbstractFileCMS:
         return self.__requester
     
     @property
-    def hubspot_instance(self) -> HubSpot:
+    def hubspot_instance(self) -> AbstractHubspot:
         """
         Returns the hubspot instance.
         """

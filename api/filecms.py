@@ -1,4 +1,4 @@
-from abstract import AbstractFileCMS
+from .abstract import AbstractFileCMS
 from requests import HTTPError, Response
 import logging
 

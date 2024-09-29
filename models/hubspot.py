@@ -1,7 +1,8 @@
-from api_requester import ApiRequester
+from .api_requester import ApiRequester
 from api.filecms import FileCMS
+from api.abstract_hubspot_client import AbstractHubspot
 
-class HubSpot:
+class HubSpot(AbstractHubspot):
     """
     Class to interact with the HubSpot API.
     
