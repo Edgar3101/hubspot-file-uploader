@@ -1,3 +1,4 @@
+from typing import Any, Dict, Optional
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
@@ -47,20 +48,7 @@ class ApiRequester(requests.Session):
         retries = Retry(total=self.retry_attempts)
         self.mount("https://", HTTPAdapter(max_retries=retries))
 
-    def request(self, method, url, params=None,
-        data=None,
-        headers=None,
-        cookies=None,
-        files=None,
-        auth=None,
-        timeout=None,
-        allow_redirects=True,
-        proxies=None,
-        hooks=None,
-        stream=None,
-        verify=None,
-        cert=None,
-        json=None,**kwargs):
+    def request(self, method, url, **kwargs: Optional[Dict[str, Any]]): # type: ignore
         """
         Makes a request to the API with the given method and URL.
 
@@ -73,17 +61,6 @@ class ApiRequester(requests.Session):
             requests.Response: The response object from the API request.
         """
         modified_url = self.url_base + url
-        return super().request(method, modified_url, params=None,
-        data=None,
-        headers=None,
-        cookies=None,
-        files=None,
-        auth=None,
-        timeout=None,
-        allow_redirects=True,
-        proxies=None,
-        hooks=None,
-        stream=None,
-        verify=None,
-        cert=None,
-        json=None,**kwargs)
+        response = super().request(method, modified_url, kwargs) 
+        response.raise_for_status()
+        return response

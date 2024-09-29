@@ -1,5 +1,6 @@
 from abstract import AbstractFileCMS
-import os, json
+from requests import HTTPError, Response
+import logging
 
 
 class FileCMS(AbstractFileCMS):
@@ -9,7 +10,7 @@ class FileCMS(AbstractFileCMS):
     
     """
 
-    def upload_file(self, **kwargs) -> None:
+    def upload_file(self, **kwargs) -> Response | None:
         """
         Uploads a file to the CMS.
 
@@ -57,12 +58,14 @@ class FileCMS(AbstractFileCMS):
         try:
             with open(file_path, "rb") as f: # type: ignore
                 files = {"file": f}
-                self.make_request(data=data, files=files)
+                return self.make_request(data=data, files=files)
         except FileNotFoundError as e:
-            raise FileNotFoundError(f"The file {file_path} does not exist.")
+            logging.error(f"The file {file_path} does not exist.")
+        except HTTPError as e:
+            logging.error(f"Error while uploading file: {e}")
   
 
-    def make_request(self, **kwargs) -> None:
+    def make_request(self, **kwargs) -> Response | None:
         """
         Make a request to the CMS.
 
@@ -73,12 +76,39 @@ class FileCMS(AbstractFileCMS):
             url (string, required): The URL to send the request to.
 
         We can only pass data and file together or json alone.
+        Raises:
+            ValueError: If both data/files and json are provided together or URL is missing
+            TypeError: If any of the arguments are of the wrong type.
+            HTTPError: If the request to the CMS fails.
+
+        Returns:
+            Response: The response from the CMS.
         """
         
 
         data = kwargs.get("data")
         json = kwargs.get("json")
         files = kwargs.get("files")
+        url= kwargs.get("url")
+
+        if url is None:
+            raise ValueError("Missing `url` argument")
+        if data or files and json:
+            raise ValueError("You can't provide both data and json")
+          
+        if json:
+            response = self.requester.post(url=kwargs["url"], json=json)   
+        elif data or files:
+            self.requester.headers.update({"Content-Type": "multipart/form-data"})
+            response = self.requester.post(url=kwargs["url"], data=data, files=files)
+        else:
+            raise ValueError("Either 'json' or 'data'/'files' must be provided")
+
+        return response
+        
+
+        
+
 
         
   
