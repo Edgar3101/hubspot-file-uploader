@@ -58,11 +58,32 @@ class FileCMS(AbstractFileCMS):
         try:
             with open(file_path, "rb") as f: # type: ignore
                 files = {"file": f}
-                return self.make_request(data=data, files=files)
+                return self.make_request(url="/",data=data, files=files)
         except FileNotFoundError as e:
             logging.error(f"The file {file_path} does not exist.")
         except HTTPError as e:
             logging.error(f"Error while uploading file: {e}")
+            return None
+
+    def delete_file(self, file_id: str) -> Response | None:
+        """
+        Deletes a file from the CMS.
+
+        Args:
+            file_id (str): The ID of the file to delete.
+
+        Returns:
+            Optional[Response]: The response from the File CMS API, or None if an error occurred.
+        """
+        if not file_id:
+            raise ValueError("Missing 'file_id' argument")
+        try:
+            return self.make_request(url=f"/{file_id}", method="DELETE")
+        except HTTPError as e:
+            logging.error(f"Error while deleting file: {e}")
+            return None
+        
+
   
 
     def make_request(self, **kwargs) -> Response | None:
@@ -74,6 +95,8 @@ class FileCMS(AbstractFileCMS):
             file (dict, oprional): The file to send in the request body.
             json (dict, optional): The JSON data to send in the request body.
             url (string, required): The URL to send the request to.
+            params (dict, optional): if params is provided we should make a GET request
+            method (str, optionl): if metehod is provided we use the method
 
         We can only pass data and file together or json alone.
         Raises:
@@ -90,19 +113,25 @@ class FileCMS(AbstractFileCMS):
         json = kwargs.get("json")
         files = kwargs.get("files")
         url= kwargs.get("url")
+        params = kwargs.get("params")
+        method = kwargs.get("method")
 
         if url is None:
             raise ValueError("Missing `url` argument")
         if data or files and json:
             raise ValueError("You can't provide both data and json")
           
-        if json:
-            response = self.requester.post(url=kwargs["url"], json=json)   
-        elif data or files:
-            self.requester.headers.update({"Content-Type": "multipart/form-data"})
-            response = self.requester.post(url=kwargs["url"], data=data, files=files)
+        if method == "GET" or method == "DELETE":
+            response = self.requester.request(method=method, url=kwargs["url"], params=params)
+        elif method == "POST" or method == "PUT" or method == "PATCH":
+            if json:
+                response = self.requester.request(method=method, url=kwargs["url"], json=json)
+            elif data or files:
+                response = self.requester.request(method=method, url=kwargs["url"], data=data, files=files)
+            else:
+                raise ValueError("Either 'json' or 'data'/'files' must be provided")
         else:
-            raise ValueError("Either 'json' or 'data'/'files' must be provided")
+            raise ValueError("Invalid method. Supported methods are 'GET', 'POST', 'PUT', 'PATCH', and 'DELETE'.")
 
         return response
         
