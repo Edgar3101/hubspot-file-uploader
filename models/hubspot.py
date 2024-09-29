@@ -1,5 +1,5 @@
 from api_requester import ApiRequester
-from files.filecms import FileCMS
+from api.filecms import FileCMS
 
 class HubSpot:
     """
